@@ -66,4 +66,14 @@ describe('CLI pipeline integration', () => {
     expect(summary).toContain('0 missing');
     expect(summary).toContain('0 mismatched');
   });
+
+  it('summary reflects multiple mismatched keys', () => {
+    const baseMap = parseEnvFile(baseEnvContent);
+    const stagingMap = parseEnvFile(stagingEnvContent);
+    const diff = diffEnvMaps(baseMap, stagingMap);
+
+    // DB_HOST and LOG_LEVEL are both mismatched
+    const summary = summarize({ staging: diff });
+    expect(summary).toContain('2 mismatched');
+  });
 });
