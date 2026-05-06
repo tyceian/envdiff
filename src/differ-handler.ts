@@ -1,41 +1,45 @@
 import { loadEnvFiles } from './loader';
-import { runDiff, hasDifferences, DiffOptions } from './differ';
+import { diffEnvMaps } from './diff';
+import { filterDiffResults } from './filter';
+import { sortDiffResults } from './sorter';
+import { redactAllEnvMaps } from './redactor';
 import { formatOutput } from './formatter';
-import { formatReport } from './reporter';
+import { runDiff, hasDifferences } from './differ';
 
-export interface DifferHandlerOptions extends DiffOptions {
+export interface DifferHandlerOptions {
   files: string[];
+  ignore?: string[];
+  sort?: string;
   format?: string;
-  silent?: boolean;
+  redact?: boolean;
+  exitCode?: boolean;
 }
 
-/**
- * Orchestrates loading env files and running the diff pipeline,
- * returning a formatted string ready for output or export.
- */
-export async function handleDiff(options: DifferHandlerOptions): Promise<{ output: string; hasIssues: boolean }> {
-  const { files, format = 'text', silent = false, ...diffOptions } = options;
+export async function handleDiff(options: DifferHandlerOptions): Promise<{ output: string; changed: boolean }> {
+  const { files, ignore = [], sort, format = 'text', redact = false, exitCode = false } = options;
 
   if (files.length < 2) {
-    throw new Error('At least two env files are required for comparison.');
+    throw new Error('At least two env files are required for comparison');
   }
 
-  const envMaps = await loadEnvFiles(files);
+  let envMaps = await loadEnvFiles(files);
 
-  const results = runDiff(envMaps, diffOptions);
-  const hasIssues = hasDifferences(envMaps, diffOptions);
-
-  let output: string;
-
-  if (format === 'text') {
-    output = formatReport(results, Object.keys(envMaps));
-  } else {
-    output = formatOutput(results, format);
+  if (redact) {
+    envMaps = redactAllEnvMaps(envMaps);
   }
 
-  if (!silent) {
-    process.stdout.write(output + '\n');
-  }
+  const results = runDiff(envMaps);
 
-  return { output, hasIssues };
+  const filtered = ignore.length > 0
+    ? filterDiffResults(results, ignore)
+    : results;
+
+  const sorted = sort
+    ? sortDiffResults(filtered, sort)
+    : filtered;
+
+  const output = formatOutput(sorted, format, files);
+  const changed = hasDifferences(filtered);
+
+  return { output, changed };
 }
