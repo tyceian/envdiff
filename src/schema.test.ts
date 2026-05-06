@@ -41,6 +41,14 @@ describe('validateAgainstSchema', () => {
     const violations = validateAgainstSchema(map, schema);
     expect(violations.some((v) => v.key === 'NODE_ENV')).toBe(true);
   });
+
+  it('flags all missing required keys, not just the first', () => {
+    const map = makeMap({});
+    const violations = validateAgainstSchema(map, schema);
+    const missingKeys = violations.map((v) => v.key);
+    expect(missingKeys).toContain('API_KEY');
+    expect(missingKeys).toContain('PORT');
+  });
 });
 
 describe('parseSchemaFile', () => {
