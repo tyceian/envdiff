@@ -32,6 +32,11 @@ describe('scoreCompleteness', () => {
   it('returns 0 when all are missing', () => {
     expect(scoreCompleteness([makeDiff('missing'), makeDiff('missing')])).toBe(0);
   });
+
+  it('ignores mismatch entries', () => {
+    const results = [makeDiff('mismatch'), makeDiff('ok')];
+    expect(scoreCompleteness(results)).toBe(100);
+  });
 });
 
 describe('scoreConsistency', () => {
@@ -42,6 +47,11 @@ describe('scoreConsistency', () => {
   it('penalizes mismatches', () => {
     const results = [makeDiff('mismatch'), makeDiff('ok')];
     expect(scoreConsistency(results)).toBe(50);
+  });
+
+  it('returns 0 when all are mismatches', () => {
+    const results = [makeDiff('mismatch'), makeDiff('mismatch')];
+    expect(scoreConsistency(results)).toBe(0);
   });
 });
 
@@ -84,5 +94,12 @@ describe('computeEnvScore', () => {
     const score = computeEnvScore(diffs, [makeLint('error')], []);
     expect(score.total).toBeLessThan(100);
     expect(score.completeness).toBe(50);
+  });
+
+  it('exposes individual dimension scores', () => {
+    const score = computeEnvScore([], [], []);
+    expect(score).toHaveProperty('completeness');
+    expect(score).toHaveProperty('consistency');
+    expect(score).toHaveProperty('quality');
   });
 });
