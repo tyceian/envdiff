@@ -49,6 +49,15 @@ describe('validateAgainstSchema', () => {
     expect(missingKeys).toContain('API_KEY');
     expect(missingKeys).toContain('PORT');
   });
+
+  it('violation objects include a descriptive message', () => {
+    const map = makeMap({ API_KEY: 'key', PORT: 'bad' });
+    const violations = validateAgainstSchema(map, schema);
+    const portViolation = violations.find((v) => v.key === 'PORT');
+    expect(portViolation).toBeDefined();
+    expect(typeof portViolation!.message).toBe('string');
+    expect(portViolation!.message.length).toBeGreaterThan(0);
+  });
 });
 
 describe('parseSchemaFile', () => {
