@@ -36,6 +36,21 @@ describe("formatBaselineReport", () => {
     expect(output).toContain("- B");
     expect(output).toContain("~ C");
   });
+
+  it("does not show Added section when there are no added keys", () => {
+    const output = formatBaselineReport({ ...empty, removed: ["OLD_KEY"] });
+    expect(output).not.toContain("Added");
+  });
+
+  it("does not show Removed section when there are no removed keys", () => {
+    const output = formatBaselineReport({ ...empty, added: ["NEW_KEY"] });
+    expect(output).not.toContain("Removed");
+  });
+
+  it("does not show Changed section when there are no changed keys", () => {
+    const output = formatBaselineReport({ ...empty, added: ["NEW_KEY"] });
+    expect(output).not.toContain("Changed");
+  });
 });
 
 describe("summarizeBaselineDiff", () => {
