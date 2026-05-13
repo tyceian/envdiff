@@ -69,3 +69,19 @@ export function validateAllEnvMaps(
   }
   return results;
 }
+
+/**
+ * Summarises a record of validation results into a single flat list of issues,
+ * each annotated with the label of the env file it came from.
+ */
+export function summariseValidationResults(
+  results: Record<string, ValidationResult>
+): Array<ValidationIssue & { label: string }> {
+  const summary: Array<ValidationIssue & { label: string }> = [];
+  for (const [label, result] of Object.entries(results)) {
+    for (const issue of result.issues) {
+      summary.push({ ...issue, label });
+    }
+  }
+  return summary;
+}
