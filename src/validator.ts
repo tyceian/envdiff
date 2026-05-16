@@ -85,3 +85,11 @@ export function summariseValidationResults(
   }
   return summary;
 }
+
+/**
+ * Returns true if all validation results in the record are valid (i.e. no errors).
+ * Useful for a quick pass/fail check before proceeding with a diff or report.
+ */
+export function allValid(results: Record<string, ValidationResult>): boolean {
+  return Object.values(results).every((r) => r.valid);
+}
