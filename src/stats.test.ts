@@ -45,6 +45,16 @@ describe("computeStats", () => {
     expect(stats.matchingPercent).toBe(75);
     expect(stats.missingPercent).toBe(25);
   });
+
+  it("percentages sum to 100 for all-matching results", () => {
+    const results = makeResults([
+      { status: "matching" },
+      { status: "matching" },
+    ]);
+    const stats = computeStats(results);
+    expect(stats.matchingPercent).toBe(100);
+    expect(stats.missingPercent).toBe(0);
+  });
 });
 
 describe("formatStats", () => {
@@ -58,6 +68,15 @@ describe("formatStats", () => {
     expect(output).toContain("Matching");
     expect(output).toContain("Extra");
     expect(output).toContain("Mismatched");
+  });
+
+  it("includes the actual counts in output", () => {
+    const stats = computeStats(
+      makeResults([{ status: "matching" }, { status: "missing" }])
+    );
+    const output = formatStats(stats);
+    expect(output).toContain("2"); // total
+    expect(output).toContain("1"); // missing / matching
   });
 });
 
@@ -74,6 +93,11 @@ describe("hasIssues", () => {
 
   it("returns true when there are mismatched keys", () => {
     const stats = computeStats(makeResults([{ status: "mismatched" }]));
+    expect(hasIssues(stats)).toBe(true);
+  });
+
+  it("returns true when there are extra keys", () => {
+    const stats = computeStats(makeResults([{ status: "extra" }]));
     expect(hasIssues(stats)).toBe(true);
   });
 });
