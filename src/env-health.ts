@@ -12,6 +12,12 @@ export interface EnvHealthReport {
   summary: string;
 }
 
+/**
+ * Maps a numeric score to a health status.
+ * - 80–100: healthy
+ * - 50–79: warning
+ * - 0–49: critical
+ */
 export function computeHealthStatus(score: number): HealthStatus {
   if (score >= 80) return "healthy";
   if (score >= 50) return "warning";
@@ -85,4 +91,12 @@ export function formatHealthReport(report: EnvHealthReport): string {
     report.issues.forEach((issue) => lines.push(`  - ${issue}`));
   }
   return lines.join("\n");
+}
+
+/**
+ * Returns true if the report indicates no issues and a healthy status.
+ * Useful for quick pass/fail checks in CI pipelines.
+ */
+export function isHealthy(report: EnvHealthReport): boolean {
+  return report.status === "healthy" && report.issues.length === 0;
 }
